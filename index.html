@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>For Ridam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Lora:ital,wght@0,400;0,500;1,400&family=Alex+Brush&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-top:#f7e7e8;
+    --bg-bottom:#fbf1e3;
+    --envelope:#efd8cd;
+    --envelope-flap:#e6c5ba;
+    --envelope-line: rgba(122,46,58,0.18);
+    --paper:#fdf7ec;
+    --ink:#462638;
+    --ink-soft:#6b4457;
+    --wine:#7a2c3a;
+    --gold:#c9a24b;
+    --heart:#e5a3ab;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{
+    margin:0;
+    padding:0;
+    min-height:100vh;
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 65%);
+    font-family:'Lora', serif;
+    color:var(--ink);
+    overflow-x:hidden;
+  }
+
+  body{
+    min-height:100vh;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+  }
+
+  /* ---------- floating hearts ---------- */
+  .hearts{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:0;
+  }
+  .hearts span{
+    position:absolute;
+    bottom:-40px;
+    display:block;
+    opacity:0.55;
+    animation: drift linear infinite;
+  }
+  .hearts svg{ width:100%; height:100%; display:block; }
+
+  @keyframes drift{
+    0%{ transform: translateY(0) translateX(0) rotate(0deg); opacity:0; }
+    10%{ opacity:0.5; }
+    90%{ opacity:0.35;}
+    100%{ transform: translateY(-115vh) translateX(var(--drift, 20px)) rotate(20deg); opacity:0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .hearts{ display:none; }
+  }
+
+  /* ---------- shared scene wrapper ---------- */
+  .scene{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:520px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .eyebrow{
+    font-family:'Lora', serif;
+    font-size:11px;
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 10px;
+  }
+
+  .headline{
+    font-family:'Alex Brush', cursive;
+    font-size:clamp(34px, 8vw, 52px);
+    color:var(--wine);
+    margin:0 0 28px;
+    line-height:1;
+  }
+
+  /* ---------- envelope ---------- */
+  #envelope-screen{
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  #envelope-screen.hide{
+    opacity:0;
+    transform: scale(0.96);
+    pointer-events:none;
+    position:absolute;
+  }
+
+  .envelope{
+    position:relative;
+    width:min(88vw, 360px);
+    aspect-ratio: 3 / 2;
+    filter: drop-shadow(0 18px 30px rgba(122,46,58,0.18));
+  }
+
+  .env-body{
+    position:absolute;
+    inset:0;
+    background: var(--envelope);
+    border-radius:6px;
+    border:1px solid var(--envelope-line);
+    overflow:hidden;
+  }
+
+  .env-body::before, .env-body::after{
+    content:"";
+    position:absolute;
+    top:0;
+    width:0;
+    height:0;
+    border-top: 92px solid transparent;
+  }
+  .env-body::before{
+    left:0;
+    border-left: 130px solid rgba(122,46,58,0.05);
+    border-bottom: 92px solid transparent;
+  }
+  .env-body::after{
+    right:0;
+    border-right: 130px solid rgba(122,46,58,0.05);
+    border-bottom: 92px solid transparent;
+  }
+
+  .env-flap{
+    position:absolute;
+    top:0; left:0; right:0;
+    height:62%;
+    background: var(--envelope-flap);
+    clip-path: polygon(0 0, 100% 0, 50% 78%);
+    transform-origin: top center;
+    transform: rotateX(0deg);
+    transition: transform 0.7s cubic-bezier(.6,.1,.3,1);
+    box-shadow: inset 0 -14px 22px -18px rgba(122,46,58,0.35);
+    z-index:3;
+  }
+
+  .envelope.opening .env-flap{
+    transform: rotateX(178deg);
+  }
+
+  .letter-peek{
+    position:absolute;
+    left:8%;
+    right:8%;
+    bottom:6%;
+    top:34%;
+    background: var(--paper);
+    border-radius:3px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    z-index:2;
+    transform: translateY(0%);
+    transition: transform 1.05s cubic-bezier(.35,.02,.15,1) 0.55s;
+  }
+  .envelope.opening .letter-peek{
+    transform: translateY(-138%);
+  }
+
+  .seal{
+    position:absolute;
+    top:56%;
+    left:50%;
+    width:64px;
+    height:64px;
+    transform: translate(-50%,-50%);
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #9a3b4a, var(--wine) 70%);
+    border:none;
+    box-shadow: 0 6px 14px rgba(122,46,58,0.4), inset 0 -4px 6px rgba(0,0,0,0.25);
+    cursor:pointer;
+    z-index:4;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: transform 0.35s cubic-bezier(.5,1.8,.4,1), opacity 0.4s ease 0.15s;
+  }
+  .seal:hover{ transform: translate(-50%,-50%) scale(1.06); }
+  .seal:focus-visible{ outline: 3px solid var(--gold); outline-offset: 3px; }
+
+  .seal svg{ width:30px; height:30px; }
+
+  .envelope.opening .seal{
+    transform: translate(-50%,-50%) scale(0.4);
+    opacity:0;
+  }
+
+  .prompt{
+    margin-top:26px;
+    font-size:13px;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+    font-style:italic;
+  }
+
+  /* ---------- letter screen ---------- */
+  #letter-screen{
+    position:relative;
+    width:100%;
+    max-width:560px;
+    opacity:0;
+    transform: translateY(14px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+    pointer-events:none;
+  }
+  #letter-screen.show{
+    opacity:1;
+    transform: translateY(0);
+    pointer-events:auto;
+  }
+
+  .paper-stack{
+    position:relative;
+  }
+  .paper-stack::before, .paper-stack::after{
+    content:"";
+    position:absolute;
+    left:6%;
+    right:6%;
+    background:var(--paper);
+    border-radius:4px;
+    z-index:0;
+  }
+  .paper-stack::before{
+    top:14px;
+    bottom:-6px;
+    box-shadow: 0 10px 18px rgba(122,46,58,0.08);
+    transform:rotate(-1.2deg);
+  }
+  .paper-stack::after{
+    top:8px;
+    bottom:-2px;
+    box-shadow: 0 8px 14px rgba(122,46,58,0.08);
+    transform:rotate(0.8deg);
+  }
+
+  .letter-card{
+    position:relative;
+    z-index:1;
+    background:var(--paper);
+    border-radius:4px;
+    padding: clamp(28px, 6vw, 52px) clamp(24px, 7vw, 56px);
+    box-shadow: 0 20px 45px rgba(122,46,58,0.16);
+  }
+
+  .letter-to{
+    font-family:'Alex Brush', cursive;
+    font-size:clamp(30px, 7vw, 40px);
+    color:var(--wine);
+    margin:0 0 22px;
+  }
+
+  .letter-body p{
+    font-family:'Lora', serif;
+    font-size:clamp(15.5px, 2vw, 17px);
+    line-height:1.85;
+    color:var(--ink);
+    margin:0 0 18px;
+  }
+
+  .letter-emoji-line{
+    font-size:19px;
+    letter-spacing:1px;
+    line-height:1.7;
+    margin:0 0 26px;
+    word-spacing:2px;
+  }
+
+  .letter-sign{
+    margin-top:8px;
+    font-family:'Alex Brush', cursive;
+    font-size:clamp(26px, 6vw, 32px);
+    color:var(--wine);
+  }
+
+  .divider{
+    width:56px;
+    height:1px;
+    background: var(--gold);
+    opacity:0.6;
+    margin: 22px 0 26px;
+  }
+
+  .seal-again{
+    display:block;
+    margin: 30px auto 0;
+    background:none;
+    border:1px solid var(--envelope-line);
+    color:var(--ink-soft);
+    font-family:'Lora', serif;
+    font-size:12.5px;
+    letter-spacing:0.06em;
+    padding:10px 20px;
+    border-radius:30px;
+    cursor:pointer;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+  .seal-again:hover{
+    background: var(--wine);
+    color:#fff;
+    border-color: var(--wine);
+  }
+  .seal-again:focus-visible{
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 420px){
+    .letter-card{ padding: 30px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hearts" aria-hidden="true" id="hearts"></div>
+
+<div class="scene">
+
+  <div id="envelope-screen">
+    <p class="eyebrow">Girlfriend's Day</p>
+    <h1 class="headline">For Ridam</h1>
+
+    <div class="envelope" id="envelope">
+      <div class="env-body">
+        <div class="env-flap"></div>
+        <div class="letter-peek"></div>
+        <button class="seal" id="sealBtn" aria-label="Open the letter for Ridam">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 20.5s-8-5.2-8-11.2C4 5.9 6.2 4 8.7 4c1.5 0 2.9.8 3.3 2 0.4-1.2 1.8-2 3.3-2 2.5 0 4.7 1.9 4.7 5.3 0 6-8 11.2-8 11.2z"
+              stroke="#e9c98f" stroke-width="1.2" fill="none"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <p class="prompt">tap the seal to open it</p>
+  </div>
+
+  <div id="letter-screen">
+    <div class="paper-stack">
+      <div class="letter-card">
+        <p class="letter-to">My Ridam,</p>
+
+        <div class="letter-body">
+          <p>Happy girlfriend's day babbyyyy 😘😘😘. I really lovee you very muchhhh.</p>
+
+          <p>The day I realised how much I love you, I realised I can't possibly live without talking to you.</p>
+
+          <p>I really miss you every minute we dont talk, send reels and I really wanna meet you. I hope that day comes really fast.</p>
+
+          <p>I want you to be really happy all the time. I feel really badd when you cry because of me, and I really wont let that happen again ever.</p>
+
+          <p>I really can never leave you, be it any reason, I will always be by your side. Let's just spend our lives together like this loving each other.</p>
+          
+          <p>I love everything about you, literally everything you are really beutifull i love your smile really pretty BTW. I can't ever hate you or get angry at you because just are soooo gooooood.</p>
+
+          <div class="divider"></div>
+
+          <p class="letter-emoji-line">I loovvveeeee youuuuuuu 😘😘💗🫶🏻🫶🏻💗🫶🏻😘💗😘🫶🏻😘😘🫶🏻💗😘🫶🏻😘😘😘😘</p>
+        </div>
+
+        <p class="letter-sign">Forever yours 💗</p>
+      </div>
+    </div>
+
+    <button class="seal-again" id="resealBtn">seal it back up</button>
+  </div>
+
+</div>
+
+<script>
+  // floating hearts
+  const heartsContainer = document.getElementById('hearts');
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if(!prefersReduced){
+    const heartSVG = (size, color) => `
+      <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}">
+        <path d="M12 20.5s-8-5.2-8-11.2C4 5.9 6.2 4 8.7 4c1.5 0 2.9.8 3.3 2 0.4-1.2 1.8-2 3.3-2 2.5 0 4.7 1.9 4.7 5.3 0 6-8 11.2-8 11.2z"/>
+      </svg>`;
+    const colors = ['#e5a3ab', '#e9c98f', '#c78a95'];
+    const count = 500;
+    for(let i=0;i<count;i++){
+      const wrap = document.createElement('span');
+      const size = 14 + Math.random()*14;
+      const left = Math.random()*100;
+      const duration = 12 + Math.random()*10;
+      const delay = Math.random()*14;
+      const driftX = (Math.random()*80 - 40) + 'px';
+      wrap.style.left = left + 'vw';
+      wrap.style.setProperty('--drift', driftX);
+      wrap.style.animationDuration = duration + 's';
+      wrap.style.animationDelay = delay + 's';
+      wrap.innerHTML = heartSVG(size, colors[i % colors.length]);
+      heartsContainer.appendChild(wrap);
+    }
+  }
+
+  const envelope = document.getElementById('envelope');
+  const envelopeScreen = document.getElementById('envelope-screen');
+  const letterScreen = document.getElementById('letter-screen');
+  const sealBtn = document.getElementById('sealBtn');
+  const resealBtn = document.getElementById('resealBtn');
+
+  sealBtn.addEventListener('click', () => {
+    envelope.classList.add('opening');
+    sealBtn.disabled = true;
+    setTimeout(() => {
+      envelopeScreen.classList.add('hide');
+      letterScreen.classList.add('show');
+    }, prefersReduced ? 50 : 1500);
+  });
+
+  resealBtn.addEventListener('click', () => {
+    letterScreen.classList.remove('show');
+    setTimeout(() => {
+      envelopeScreen.classList.remove('hide');
+      envelope.classList.remove('opening');
+      sealBtn.disabled = false;
+    }, 400);
+  });
+</script>
+
+</body>
+</html>
