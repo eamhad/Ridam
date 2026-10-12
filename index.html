@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -28,14 +28,13 @@
     margin:0;
     padding:0;
     min-height:100vh;
-    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 65%);
+    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 65%) no-repeat fixed;
     font-family:'Lora', serif;
     color:var(--ink);
     overflow-x:hidden;
   }
 
   body{
-    min-height:100vh;
     position:relative;
     display:flex;
     align-items:center;
@@ -55,7 +54,7 @@
     position:absolute;
     bottom:-40px;
     display:block;
-    opacity:0.55;
+    opacity:0;
     animation: drift linear infinite;
   }
   .hearts svg{ width:100%; height:100%; display:block; }
@@ -63,7 +62,7 @@
   @keyframes drift{
     0%{ transform: translateY(0) translateX(0) rotate(0deg); opacity:0; }
     10%{ opacity:0.5; }
-    90%{ opacity:0.35;}
+    90%{ opacity:0.35; }
     100%{ transform: translateY(-115vh) translateX(var(--drift, 20px)) rotate(20deg); opacity:0; }
   }
 
@@ -71,7 +70,7 @@
     .hearts{ display:none; }
   }
 
-  /* ---------- shared scene wrapper ---------- */
+  /* ---------- scene ---------- */
   .scene{
     position:relative;
     z-index:1;
@@ -83,12 +82,12 @@
   }
 
   .eyebrow{
-    font-family:'Lora', serif;
     font-size:11px;
     letter-spacing:0.28em;
     text-transform:uppercase;
     color:var(--ink-soft);
     margin:0 0 10px;
+    text-align:center;
   }
 
   .headline{
@@ -97,10 +96,15 @@
     color:var(--wine);
     margin:0 0 28px;
     line-height:1;
+    text-align:center;
+    font-weight:400;
   }
 
   /* ---------- envelope ---------- */
   #envelope-screen{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
     transition: opacity 0.5s ease, transform 0.5s ease;
   }
   #envelope-screen.hide{
@@ -114,35 +118,44 @@
     position:relative;
     width:min(88vw, 360px);
     aspect-ratio: 3 / 2;
+    perspective: 900px;
     filter: drop-shadow(0 18px 30px rgba(122,46,58,0.18));
   }
 
+  /* body has no overflow:hidden so the letter can rise out of it */
   .env-body{
     position:absolute;
     inset:0;
     background: var(--envelope);
     border-radius:6px;
     border:1px solid var(--envelope-line);
-    overflow:hidden;
   }
 
-  .env-body::before, .env-body::after{
+  /* side folds are clipped in their own layer */
+  .env-folds{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+    border-radius:6px;
+    pointer-events:none;
+    z-index:1;
+  }
+  .env-folds::before, .env-folds::after{
     content:"";
     position:absolute;
     top:0;
     width:0;
     height:0;
     border-top: 92px solid transparent;
+    border-bottom: 92px solid transparent;
   }
-  .env-body::before{
+  .env-folds::before{
     left:0;
     border-left: 130px solid rgba(122,46,58,0.05);
-    border-bottom: 92px solid transparent;
   }
-  .env-body::after{
+  .env-folds::after{
     right:0;
     border-right: 130px solid rgba(122,46,58,0.05);
-    border-bottom: 92px solid transparent;
   }
 
   .env-flap{
@@ -154,10 +167,8 @@
     transform-origin: top center;
     transform: rotateX(0deg);
     transition: transform 0.7s cubic-bezier(.6,.1,.3,1);
-    box-shadow: inset 0 -14px 22px -18px rgba(122,46,58,0.35);
     z-index:3;
   }
-
   .envelope.opening .env-flap{
     transform: rotateX(178deg);
   }
@@ -199,12 +210,12 @@
   }
   .seal:hover{ transform: translate(-50%,-50%) scale(1.06); }
   .seal:focus-visible{ outline: 3px solid var(--gold); outline-offset: 3px; }
-
   .seal svg{ width:30px; height:30px; }
 
   .envelope.opening .seal{
     transform: translate(-50%,-50%) scale(0.4);
     opacity:0;
+    pointer-events:none;
   }
 
   .prompt{
@@ -216,24 +227,29 @@
   }
 
   /* ---------- letter screen ---------- */
+  /* hidden: out of the layout flow so it can't push the envelope off-center */
   #letter-screen{
-    position:relative;
+    position:absolute;
+    top:0; left:0; right:0;
     width:100%;
     max-width:560px;
+    margin:0 auto;
     opacity:0;
+    visibility:hidden;
     transform: translateY(14px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
+    transition: opacity 0.7s ease, transform 0.7s ease, visibility 0s linear 0.7s;
     pointer-events:none;
   }
   #letter-screen.show{
+    position:relative;
     opacity:1;
+    visibility:visible;
     transform: translateY(0);
+    transition: opacity 0.7s ease, transform 0.7s ease, visibility 0s;
     pointer-events:auto;
   }
 
-  .paper-stack{
-    position:relative;
-  }
+  .paper-stack{ position:relative; }
   .paper-stack::before, .paper-stack::after{
     content:"";
     position:absolute;
@@ -273,14 +289,13 @@
   }
 
   .letter-body p{
-    font-family:'Lora', serif;
     font-size:clamp(15.5px, 2vw, 17px);
     line-height:1.85;
     color:var(--ink);
     margin:0 0 18px;
   }
 
-  .letter-emoji-line{
+  .letter-body p.letter-emoji-line{
     font-size:19px;
     letter-spacing:1px;
     line-height:1.7;
@@ -289,7 +304,7 @@
   }
 
   .letter-sign{
-    margin-top:8px;
+    margin:8px 0 0;
     font-family:'Alex Brush', cursive;
     font-size:clamp(26px, 6vw, 32px);
     color:var(--wine);
@@ -344,6 +359,7 @@
 
     <div class="envelope" id="envelope">
       <div class="env-body">
+        <div class="env-folds"></div>
         <div class="env-flap"></div>
         <div class="letter-peek"></div>
         <button class="seal" id="sealBtn" aria-label="Open the letter for Ridam">
@@ -368,13 +384,13 @@
 
           <p>The day I realised how much I love you, I realised I can't possibly live without talking to you.</p>
 
-          <p>I really miss you every minute we dont talk, send reels and I really wanna meet you. I hope that day comes really fast.</p>
+          <p>I miss you every minute we don't talk. I love when you send reels, and I really wanna meet you. I hope that day comes really fast.</p>
 
-          <p>I want you to be really happy all the time. I feel really badd when you cry because of me, and I really wont let that happen again ever.</p>
+          <p>I want you to be really happy all the time. I feel really bad when you cry because of me, and I really won't let that happen again, ever.</p>
 
-          <p>I really can never leave you, be it any reason, I will always be by your side. Let's just spend our lives together like this loving each other.</p>
-          
-          <p>I love everything about you, literally everything you are really beutifull i love your smile really pretty BTW. I can't ever hate you or get angry at you because just are soooo gooooood.</p>
+          <p>I can never leave you, be it for any reason. I will always be by your side. Let's just spend our lives together like this, loving each other.</p>
+
+          <p>I love everything about you, literally everything. You are really beautiful, and I love your smile, really pretty BTW. I can't ever hate you or get angry at you because you're just soooo gooooood.</p>
 
           <div class="divider"></div>
 
@@ -395,24 +411,22 @@
   const heartsContainer = document.getElementById('hearts');
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  if(!prefersReduced){
+  if (!prefersReduced) {
     const heartSVG = (size, color) => `
       <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}">
         <path d="M12 20.5s-8-5.2-8-11.2C4 5.9 6.2 4 8.7 4c1.5 0 2.9.8 3.3 2 0.4-1.2 1.8-2 3.3-2 2.5 0 4.7 1.9 4.7 5.3 0 6-8 11.2-8 11.2z"/>
       </svg>`;
     const colors = ['#e5a3ab', '#e9c98f', '#c78a95'];
-    const count = 500;
-    for(let i=0;i<count;i++){
+    const count = 35;
+    for (let i = 0; i < count; i++) {
       const wrap = document.createElement('span');
-      const size = 14 + Math.random()*14;
-      const left = Math.random()*100;
-      const duration = 12 + Math.random()*10;
-      const delay = Math.random()*14;
-      const driftX = (Math.random()*80 - 40) + 'px';
-      wrap.style.left = left + 'vw';
-      wrap.style.setProperty('--drift', driftX);
-      wrap.style.animationDuration = duration + 's';
-      wrap.style.animationDelay = delay + 's';
+      const size = 14 + Math.random() * 14;
+      wrap.style.width = size + 'px';
+      wrap.style.height = size + 'px';
+      wrap.style.left = (Math.random() * 100) + 'vw';
+      wrap.style.setProperty('--drift', ((Math.random() * 80) - 40) + 'px');
+      wrap.style.animationDuration = (12 + Math.random() * 10) + 's';
+      wrap.style.animationDelay = (Math.random() * 14) + 's';
       wrap.innerHTML = heartSVG(size, colors[i % colors.length]);
       heartsContainer.appendChild(wrap);
     }
