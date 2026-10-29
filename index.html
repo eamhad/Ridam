@@ -1,461 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>For Ridam</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Lora:ital,wght@0,400;0,500;1,400&family=Alex+Brush&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>I’m Sorry</title>
 <style>
-  :root{
-    --bg-top:#f7e7e8;
-    --bg-bottom:#fbf1e3;
-    --envelope:#efd8cd;
-    --envelope-flap:#e6c5ba;
-    --envelope-line: rgba(122,46,58,0.18);
-    --paper:#fdf7ec;
-    --ink:#462638;
-    --ink-soft:#6b4457;
-    --wine:#7a2c3a;
-    --gold:#c9a24b;
-    --heart:#e5a3ab;
-  }
-
-  *{box-sizing:border-box;}
-
-  html,body{
-    margin:0;
-    padding:0;
-    min-height:100vh;
-    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 65%) no-repeat fixed;
-    font-family:'Lora', serif;
-    color:var(--ink);
-    overflow-x:hidden;
-  }
-
-  body{
-    position:relative;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:32px 16px;
-  }
-
-  /* ---------- floating hearts ---------- */
-  .hearts{
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    overflow:hidden;
-    z-index:0;
-  }
-  .hearts span{
-    position:absolute;
-    bottom:-40px;
-    display:block;
-    opacity:0;
-    animation: drift linear infinite;
-  }
-  .hearts svg{ width:100%; height:100%; display:block; }
-
-  @keyframes drift{
-    0%{ transform: translateY(0) translateX(0) rotate(0deg); opacity:0; }
-    10%{ opacity:0.5; }
-    90%{ opacity:0.35; }
-    100%{ transform: translateY(-115vh) translateX(var(--drift, 20px)) rotate(20deg); opacity:0; }
-  }
-
-  @media (prefers-reduced-motion: reduce){
-    .hearts{ display:none; }
-  }
-
-  /* ---------- scene ---------- */
-  .scene{
-    position:relative;
-    z-index:1;
-    width:100%;
-    max-width:520px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-  }
-
-  .eyebrow{
-    font-size:11px;
-    letter-spacing:0.28em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    margin:0 0 10px;
-    text-align:center;
-  }
-
-  .headline{
-    font-family:'Alex Brush', cursive;
-    font-size:clamp(34px, 8vw, 52px);
-    color:var(--wine);
-    margin:0 0 28px;
-    line-height:1;
-    text-align:center;
-    font-weight:400;
-  }
-
-  /* ---------- envelope ---------- */
-  #envelope-screen{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-  #envelope-screen.hide{
-    opacity:0;
-    transform: scale(0.96);
-    pointer-events:none;
-    position:absolute;
-  }
-
-  .envelope{
-    position:relative;
-    width:min(88vw, 360px);
-    aspect-ratio: 3 / 2;
-    perspective: 900px;
-    filter: drop-shadow(0 18px 30px rgba(122,46,58,0.18));
-  }
-
-  /* body has no overflow:hidden so the letter can rise out of it */
-  .env-body{
-    position:absolute;
-    inset:0;
-    background: var(--envelope);
-    border-radius:6px;
-    border:1px solid var(--envelope-line);
-  }
-
-  /* side folds are clipped in their own layer */
-  .env-folds{
-    position:absolute;
-    inset:0;
-    overflow:hidden;
-    border-radius:6px;
-    pointer-events:none;
-    z-index:1;
-  }
-  .env-folds::before, .env-folds::after{
-    content:"";
-    position:absolute;
-    top:0;
-    width:0;
-    height:0;
-    border-top: 92px solid transparent;
-    border-bottom: 92px solid transparent;
-  }
-  .env-folds::before{
-    left:0;
-    border-left: 130px solid rgba(122,46,58,0.05);
-  }
-  .env-folds::after{
-    right:0;
-    border-right: 130px solid rgba(122,46,58,0.05);
-  }
-
-  .env-flap{
-    position:absolute;
-    top:0; left:0; right:0;
-    height:62%;
-    background: var(--envelope-flap);
-    clip-path: polygon(0 0, 100% 0, 50% 78%);
-    transform-origin: top center;
-    transform: rotateX(0deg);
-    transition: transform 0.7s cubic-bezier(.6,.1,.3,1);
-    z-index:3;
-  }
-  .envelope.opening .env-flap{
-    transform: rotateX(178deg);
-  }
-
-  .letter-peek{
-    position:absolute;
-    left:8%;
-    right:8%;
-    bottom:6%;
-    top:34%;
-    background: var(--paper);
-    border-radius:3px;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-    z-index:2;
-    transform: translateY(0%);
-    transition: transform 1.05s cubic-bezier(.35,.02,.15,1) 0.55s;
-  }
-  .envelope.opening .letter-peek{
-    transform: translateY(-138%);
-  }
-
-  .seal{
-    position:absolute;
-    top:56%;
-    left:50%;
-    width:64px;
-    height:64px;
-    transform: translate(-50%,-50%);
-    border-radius:50%;
-    background: radial-gradient(circle at 35% 30%, #9a3b4a, var(--wine) 70%);
-    border:none;
-    box-shadow: 0 6px 14px rgba(122,46,58,0.4), inset 0 -4px 6px rgba(0,0,0,0.25);
-    cursor:pointer;
-    z-index:4;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition: transform 0.35s cubic-bezier(.5,1.8,.4,1), opacity 0.4s ease 0.15s;
-  }
-  .seal:hover{ transform: translate(-50%,-50%) scale(1.06); }
-  .seal:focus-visible{ outline: 3px solid var(--gold); outline-offset: 3px; }
-  .seal svg{ width:30px; height:30px; }
-
-  .envelope.opening .seal{
-    transform: translate(-50%,-50%) scale(0.4);
-    opacity:0;
-    pointer-events:none;
-  }
-
-  .prompt{
-    margin-top:26px;
-    font-size:13px;
-    letter-spacing:0.04em;
-    color:var(--ink-soft);
-    font-style:italic;
-  }
-
-  /* ---------- letter screen ---------- */
-  /* hidden: out of the layout flow so it can't push the envelope off-center */
-  #letter-screen{
-    position:absolute;
-    top:0; left:0; right:0;
-    width:100%;
-    max-width:560px;
-    margin:0 auto;
-    opacity:0;
-    visibility:hidden;
-    transform: translateY(14px);
-    transition: opacity 0.7s ease, transform 0.7s ease, visibility 0s linear 0.7s;
-    pointer-events:none;
-  }
-  #letter-screen.show{
-    position:relative;
-    opacity:1;
-    visibility:visible;
-    transform: translateY(0);
-    transition: opacity 0.7s ease, transform 0.7s ease, visibility 0s;
-    pointer-events:auto;
-  }
-
-  .paper-stack{ position:relative; }
-  .paper-stack::before, .paper-stack::after{
-    content:"";
-    position:absolute;
-    left:6%;
-    right:6%;
-    background:var(--paper);
-    border-radius:4px;
-    z-index:0;
-  }
-  .paper-stack::before{
-    top:14px;
-    bottom:-6px;
-    box-shadow: 0 10px 18px rgba(122,46,58,0.08);
-    transform:rotate(-1.2deg);
-  }
-  .paper-stack::after{
-    top:8px;
-    bottom:-2px;
-    box-shadow: 0 8px 14px rgba(122,46,58,0.08);
-    transform:rotate(0.8deg);
-  }
-
-  .letter-card{
-    position:relative;
-    z-index:1;
-    background:var(--paper);
-    border-radius:4px;
-    padding: clamp(28px, 6vw, 52px) clamp(24px, 7vw, 56px);
-    box-shadow: 0 20px 45px rgba(122,46,58,0.16);
-  }
-
-  .letter-to{
-    font-family:'Alex Brush', cursive;
-    font-size:clamp(30px, 7vw, 40px);
-    color:var(--wine);
-    margin:0 0 22px;
-  }
-
-  .letter-body p{
-    font-size:clamp(15.5px, 2vw, 17px);
-    line-height:1.85;
-    color:var(--ink);
-    margin:0 0 18px;
-  }
-
-  .letter-body p.letter-emoji-line{
-    font-size:19px;
-    letter-spacing:1px;
-    line-height:1.7;
-    margin:0 0 26px;
-    word-spacing:2px;
-  }
-
-  .letter-sign{
-    margin:8px 0 0;
-    font-family:'Alex Brush', cursive;
-    font-size:clamp(26px, 6vw, 32px);
-    color:var(--wine);
-  }
-
-  .divider{
-    width:56px;
-    height:1px;
-    background: var(--gold);
-    opacity:0.6;
-    margin: 22px 0 26px;
-  }
-
-  .seal-again{
-    display:block;
-    margin: 30px auto 0;
-    background:none;
-    border:1px solid var(--envelope-line);
-    color:var(--ink-soft);
-    font-family:'Lora', serif;
-    font-size:12.5px;
-    letter-spacing:0.06em;
-    padding:10px 20px;
-    border-radius:30px;
-    cursor:pointer;
-    transition: background 0.25s ease, color 0.25s ease;
-  }
-  .seal-again:hover{
-    background: var(--wine);
-    color:#fff;
-    border-color: var(--wine);
-  }
-  .seal-again:focus-visible{
-    outline: 3px solid var(--gold);
-    outline-offset: 2px;
-  }
-
-  @media (max-width: 420px){
-    .letter-card{ padding: 30px 20px; }
-  }
+:root{--bg:#fff5f6;--card:#ffffff;--ink:#3b2a30;--soft:#8a6b73;--accent:#e0536f;--accent2:#f7a8b8;color-scheme:light;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1216;--card:#2a1c22;--ink:#fbe9ee;--soft:#c09aa5;--accent:#ff7b96;--accent2:#6b2f40;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1c1216;--card:#2a1c22;--ink:#fbe9ee;--soft:#c09aa5;--accent:#ff7b96;--accent2:#6b2f40;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,"Times New Roman",serif;line-height:1.6;overflow-x:hidden}
+section{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px}
+h1{font-size:clamp(3rem,14vw,6rem);margin:0;color:var(--accent);letter-spacing:-1px}
+h2{font-size:clamp(1.6rem,6vw,2.4rem);margin:0 0 12px}
+p{max-width:34rem;font-size:1.15rem;color:var(--ink);margin:8px 0}
+.soft{color:var(--soft);font-style:italic}
+.heart{font-size:3rem;animation:beat 1.4s infinite}
+@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+.card{background:var(--card);border-radius:20px;padding:28px 24px;max-width:34rem;box-shadow:0 8px 30px rgba(224,83,111,.15);opacity:0;transform:translateY(24px);transition:.8s}
+.card.show{opacity:1;transform:none}
+.list{list-style:none;padding:0;margin:12px 0 0;text-align:left}
+.list li{padding:8px 0 8px 32px;position:relative;font-size:1.1rem}
+.list li:before{content:"♥";position:absolute;left:0;color:var(--accent)}
+.btns{display:flex;gap:16px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:24px;min-height:120px;position:relative;width:100%}
+button{font:inherit;font-size:1.15rem;border:0;border-radius:999px;padding:14px 30px;cursor:pointer}
+#yes{background:var(--accent);color:#fff;box-shadow:0 6px 20px rgba(224,83,111,.4)}
+#no{background:var(--accent2);color:var(--ink)}
+#win{display:none}
+.fall{position:fixed;top:-40px;font-size:1.6rem;pointer-events:none;animation:fall linear forwards;z-index:9}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
 </style>
 </head>
 <body>
+<section>
+  <div class="heart">💔</div>
+  <h1>I’m sorry.</h1>
+  <p class="soft">Please scroll down. I made this just for you.</p>
+</section>
 
-<div class="hearts" aria-hidden="true" id="hearts"></div>
-
-<div class="scene">
-
-  <div id="envelope-screen">
-    <p class="eyebrow">Girlfriend's Day</p>
-    <h1 class="headline">For Ridam</h1>
-
-    <div class="envelope" id="envelope">
-      <div class="env-body">
-        <div class="env-folds"></div>
-        <div class="env-flap"></div>
-        <div class="letter-peek"></div>
-        <button class="seal" id="sealBtn" aria-label="Open the letter for Ridam">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 20.5s-8-5.2-8-11.2C4 5.9 6.2 4 8.7 4c1.5 0 2.9.8 3.3 2 0.4-1.2 1.8-2 3.3-2 2.5 0 4.7 1.9 4.7 5.3 0 6-8 11.2-8 11.2z"
-              stroke="#e9c98f" stroke-width="1.2" fill="none"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <p class="prompt">tap the seal to open it</p>
+<section>
+  <div class="card">
+    <h2>I was wrong.</h2>
+    <p>I said what i didn't mean to say babby and i dont know why i said it i never meant it. I care about you a lot babbyy and i care about you the most.</p>
   </div>
+</section>
 
-  <div id="letter-screen">
-    <div class="paper-stack">
-      <div class="letter-card">
-        <p class="letter-to">My Ridam,</p>
-
-        <div class="letter-body">
-          <p>Happy girlfriend's day babbyyyy 😘😘😘. I really lovee you very muchhhh.</p>
-
-          <p>The day I realised how much I love you, I realised I can't possibly live without talking to you.</p>
-
-          <p>I miss you every minute we don't talk. I love when you send reels, and I really wanna meet you. I hope that day comes really fast.</p>
-
-          <p>I want you to be really happy all the time. I feel really bad when you cry because of me, and I really won't let that happen again, ever.</p>
-
-          <p>I can never leave you, be it for any reason. I will always be by your side. Let's just spend our lives together like this, loving each other.</p>
-
-          <p>I love everything about you, literally everything. You are really beautiful, and I love your smile, really pretty BTW. I can't ever hate you or get angry at you because you're just soooo gooooood.</p>
-
-          <div class="divider"></div>
-
-          <p class="letter-emoji-line">I loovvveeeee youuuuuuu 😘😘💗🫶🏻🫶🏻💗🫶🏻😘💗😘🫶🏻😘😘🫶🏻💗😘🫶🏻😘😘😘😘</p>
-        </div>
-
-        <p class="letter-sign">Forever yours 💗</p>
-      </div>
-    </div>
-
-    <button class="seal-again" id="resealBtn">seal it back up</button>
+<section>
+  <div class="card">
+    <h2>I understand now</h2>
+    <ul class="list">
+      <li>i shouldn't have said that for anyreason.</li>
+      <li>I will think every time before saying when i am sad.</li>
+      <li>I regret it every time and i will be better for you babyy pakkaa.</li>
+    </ul>
   </div>
+</section>
 
-</div>
+<section>
+  <div class="card">
+    <h2>I promise</h2>
+    <ul class="list">
+      <li>To think before I say.</li>
+      <li>To never do anything that hurts you or makes you sad.</li>
+      <li>To keep you as my baby and care for you baby bohot and keep babying you.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="card show" id="ask">
+    <div class="heart">🥺</div>
+    <h2>Will you forgive me?</h2>
+    <p class="soft">I love you more than I can fit on a webpage.</p>
+    <div class="btns" id="btns">
+      <button id="yes">Yes 💕</button>
+      <button id="no">No</button>
+    </div>
+    <div id="win">
+      <div class="heart">🥰</div>
+      <h2>Thank you, my jiggly puff.</h2>
+      <p>I promise to be better for you my baby. 💖</p>
+    </div>
+  </div>
+</section>
 
 <script>
-  // floating hearts
-  const heartsContainer = document.getElementById('hearts');
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  if (!prefersReduced) {
-    const heartSVG = (size, color) => `
-      <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}">
-        <path d="M12 20.5s-8-5.2-8-11.2C4 5.9 6.2 4 8.7 4c1.5 0 2.9.8 3.3 2 0.4-1.2 1.8-2 3.3-2 2.5 0 4.7 1.9 4.7 5.3 0 6-8 11.2-8 11.2z"/>
-      </svg>`;
-    const colors = ['#e5a3ab', '#e9c98f', '#c78a95'];
-    const count = 35;
-    for (let i = 0; i < count; i++) {
-      const wrap = document.createElement('span');
-      const size = 14 + Math.random() * 14;
-      wrap.style.width = size + 'px';
-      wrap.style.height = size + 'px';
-      wrap.style.left = (Math.random() * 100) + 'vw';
-      wrap.style.setProperty('--drift', ((Math.random() * 80) - 40) + 'px');
-      wrap.style.animationDuration = (12 + Math.random() * 10) + 's';
-      wrap.style.animationDelay = (Math.random() * 14) + 's';
-      wrap.innerHTML = heartSVG(size, colors[i % colors.length]);
-      heartsContainer.appendChild(wrap);
-    }
-  }
-
-  const envelope = document.getElementById('envelope');
-  const envelopeScreen = document.getElementById('envelope-screen');
-  const letterScreen = document.getElementById('letter-screen');
-  const sealBtn = document.getElementById('sealBtn');
-  const resealBtn = document.getElementById('resealBtn');
-
-  sealBtn.addEventListener('click', () => {
-    envelope.classList.add('opening');
-    sealBtn.disabled = true;
-    setTimeout(() => {
-      envelopeScreen.classList.add('hide');
-      letterScreen.classList.add('show');
-    }, prefersReduced ? 50 : 1500);
-  });
-
-  resealBtn.addEventListener('click', () => {
-    letterScreen.classList.remove('show');
-    setTimeout(() => {
-      envelopeScreen.classList.remove('hide');
-      envelope.classList.remove('opening');
-      sealBtn.disabled = false;
-    }, 400);
-  });
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add("show")})},{threshold:.3});
+document.querySelectorAll(".card").forEach(function(c){io.observe(c)});
+var no=document.getElementById("no"),yes=document.getElementById("yes"),btns=document.getElementById("btns");
+function dodge(e){e.preventDefault();no.style.position="absolute";
+var w=btns.clientWidth-no.offsetWidth,h=btns.clientHeight-no.offsetHeight;
+no.style.left=Math.random()*Math.max(w,0)+"px";no.style.top=Math.random()*Math.max(h,0)+"px"}
+no.addEventListener("mouseover",dodge);no.addEventListener("touchstart",dodge);no.addEventListener("click",dodge);
+yes.addEventListener("click",function(){
+btns.style.display="none";document.querySelector("#ask > .heart").style.display="none";
+document.querySelector("#ask > h2").style.display="none";document.querySelector("#ask > p").style.display="none";
+document.getElementById("win").style.display="block";
+var em=["💖","💕","💗","🌹","✨"];
+for(var i=0;i<40;i++){(function(i){setTimeout(function(){var s=document.createElement("span");
+s.className="fall";s.textContent=em[i%em.length];s.style.left=Math.random()*100+"vw";
+s.style.animationDuration=(3+Math.random()*3)+"s";document.body.appendChild(s);
+setTimeout(function(){s.remove()},6500)},i*120)})(i)}
+});
 </script>
-
 </body>
 </html>
+
